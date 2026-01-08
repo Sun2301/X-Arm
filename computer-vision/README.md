@@ -103,7 +103,7 @@ Structure du dataset YOLO:
 
 ## Entraîner le Modèle
 
-### Sur Google Colab (Recommandé)
+### Sur Google Colab
 
 **Avantages :** GPU gratuit, pas de configuration locale
 
@@ -195,7 +195,7 @@ export DISPLAY=:0
 
 ---
 
-## Utilisation du Modèle dans Votre Code
+## Utilisation du Modèle
 
 ### Exemple Python Simple
 
@@ -237,41 +237,6 @@ cap.release()
 cv2.destroyAllWindows()
 ```
 
-### Pour Contrôler le Bras Robotique
-
-```python
-from ultralytics import YOLO
-import cv2
-
-model = YOLO('models/best.pt')
-
-# Mapping classe -> action robot
-actions = {
-    0: "move_left",    # Blue
-    1: "move_center",  # Green
-    2: "move_right"    # Red
-}
-
-cap = cv2.VideoCapture(0)
-while True:
-    ret, frame = cap.read()
-    results = model(frame, verbose=False, conf=0.5)
-
-    if results[0].boxes:
-        for box in results[0].boxes:
-            class_id = int(box.cls[0])
-            action = actions[class_id]
-
-            # TODO: Envoyer commande au robot X-Arm
-            print(f"Action: {action}")
-
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
-
-cap.release()
-cv2.destroyAllWindows()
-```
-
 ---
 
 ## Améliorer les Performances
@@ -287,9 +252,9 @@ cv2.destroyAllWindows()
 2. **Utiliser un modèle plus puissant :**
 
    ```bash
-   model=yolov8s.pt  # Small (au lieu de Nano)
+   model=yolov8s.pt  # (rapide mais moins précis)
    # ou
-   model=yolov8m.pt  # Medium (plus lent mais plus précis)
+   model=yolov8m.pt  # (lent mais plus précis)
    ```
 
 3. **Augmenter la taille des images :**
@@ -358,22 +323,14 @@ python webcam_simple.py
 
 ---
 
-## Contributeurs
 
-- Romaric - Développement initial du pipeline YOLO
-- Équipe X-Arm AI
-
----
 
 ## Changelog
 
-### v1.0 (20 Décembre 2025)
 
 - Dataset YOLO converti (Edge Impulse → YOLO)
 - Modèle entraîné avec mAP50: 0.884
 - Détection temps réel en webcam
 - Documentation complète
 
----
 
-**Prêt à utiliser.**
