@@ -5,6 +5,7 @@ Affiche les détections en direct
 """
 
 import cv2
+import matplotlib.pyplot as plt
 import torch
 from ultralytics import YOLO
 from pathlib import Path
@@ -132,8 +133,12 @@ try:
             2
         )
         
-        # Afficher la frame
-        cv2.imshow("YOLO - Détection couleurs (q=quitter, s=sauvegarder)", frame)
+        # Afficher la frame avec matplotlib (compatible Wayland/headless)
+        plt.imshow(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+        plt.title("YOLO - Détection couleurs (q=quitter, s=sauvegarder)")
+        plt.axis('off')
+        plt.pause(0.001)
+        plt.clf()
         
         # Gestion des touches
         key = cv2.waitKey(1) & 0xFF
@@ -151,7 +156,7 @@ except KeyboardInterrupt:
     print("\n Interruption utilisateur")
 finally:
     cap.release()
-    cv2.destroyAllWindows()
+    plt.close('all')
     print(f"\n✓ Webcam fermée")
     print(f"Captures sauvegardées dans: {save_dir}")
     print(f"Captures sauvegardées dans: {save_dir}")

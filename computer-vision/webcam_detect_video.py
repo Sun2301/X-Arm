@@ -22,7 +22,7 @@ warnings.filterwarnings('ignore')
 model_path = Path(__file__).parent / "models" / "best.pt"
 
 if not model_path.exists():
-    print(f"❌ Modèle non trouvé: {model_path}")
+    print(f" Modèle non trouvé: {model_path}")
     exit(1)
 
 print(f"✓ Modèle chargé: {model_path}")
