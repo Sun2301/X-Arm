@@ -1,0 +1,101 @@
+#!/usr/bin/env python3
+"""
+test_HSV_simple.py — Calibration HSV UNIQUEMENT (Simple et directe)
+
+Lance ceci, ajuste les sliders, copie les bornes dans detect_pixel2real.py
+"""
+
+import cv2
+import numpy as np
+from pathlib import Path
+
+# ==========================================
+# ⚙️ CONFIGURATION
+# ==========================================
+
+CAMERA_INDEX = 1  # Modifie si besoin (0, 1, 2...)
+
+# ==========================================
+# FONCTION CALIBRATION
+# ==========================================
+
+def calibrate(camera_index=CAMERA_INDEX):
+    """
+    Lance la calibration HSV avec 6 sliders.
+    Ajuste pour isoler UNIQUEMENT la face du dessus du cube.
+    """
+    cap = cv2.VideoCapture(camera_index)
+    
+    if not cap.isOpened():
+        print(f"❌ Erreur: Impossible d'ouvrir la caméra (index {camera_index})")
+        print("   Modifie CAMERA_INDEX en haut du fichier (essaie 0, 1, 2...)")
+        return
+    
+    cv2.namedWindow("Calibration")
+    
+    # Créer les 6 sliders
+    for name, val in [("H_low", 0), ("S_low", 0), ("V_low", 0),
+                      ("H_high", 179), ("S_high", 255), ("V_high", 255)]:
+        cv2.createTrackbar(name, "Calibration", val,
+                           179 if "H" in name else 255, lambda x: None)
+
+    print("✓ Calibration HSV ouverte")
+    print("  Ajuste les sliders pour isoler UNIQUEMENT la face du dessus (blanc)")
+    print("  Appuye 'q' pour confirmer")
+    
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            print("❌ Erreur de flux vidéo")
+            break
+        
+        # Lire les positions des sliders
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        lo = np.array([cv2.getTrackbarPos(n, "Calibration") 
+                      for n in ["H_low", "S_low", "V_low"]])
+        hi = np.array([cv2.getTrackbarPos(n, "Calibration") 
+                      for n in ["H_high", "S_high", "V_high"]])
+        
+        # Créer le masque
+        mask = cv2.inRange(hsv, lo, hi)
+        
+        # Afficher les deux fenêtres
+        cv2.imshow("Calibration", mask)
+        cv2.imshow("Frame", frame)
+        
+        # Attendre 'q' pour quitter
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            print("\n" + "=" * 70)
+            print("✓ BORNES CALIBRÉES:")
+            print("=" * 70)
+            print(f"HSV_LOWER = np.array({lo.tolist()})")
+            print(f"HSV_UPPER = np.array({hi.tolist()})")
+            print("=" * 70)
+            print("\n📋 À FAIRE:")
+            print("1. Copie les 2 lignes ci-dessus")
+            print("2. Ouvre detect_pixel2real.py (lignes 15-16)")
+            print("3. Remplace les valeurs HSV_LOWER et HSV_UPPER")
+            print("4. Lance: python3 detect_pixel2real.py")
+            print("=" * 70)
+            break
+    
+    cap.release()
+    cv2.destroyAllWindows()
+
+
+# ==========================================
+# MAIN
+# ==========================================
+
+if __name__ == "__main__":
+    print("\n" + "=" * 70)
+    print("🎨 CALIBRATION HSV — Isolation de la face du dessus du cube")
+    print("=" * 70)
+    print("\n📋 Instructions:")
+    print("  1. Pose le cube sous la caméra")
+    print("  2. Ajuste les 6 sliders pour voir UNIQUEMENT la face du dessus")
+    print("  3. Appuye 'q' pour confirmer et voir les bornes à copier")
+    print("=" * 70 + "\n")
+    
+    # Lance la calibration
+    calibrate()

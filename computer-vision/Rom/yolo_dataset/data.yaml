@@ -1,0 +1,9 @@
+# Configuration du dataset YOLO pour X-Arm
+path: /home/romaric/Documents/ProjetX_Arm/X-Arm/computer-vision/yolo_dataset  # chemin du dataset
+train: images/train  # chemin des images d'entraînement (relatif à 'path')
+val: images/val  # chemin des images de validation (relatif à 'path')
+test: images/test  # chemin des images de test (relatif à 'path')
+
+# Classes
+nc: 3  # nombre de classes
+names: ['Blue', 'Green', 'Red']  # noms des classes

@@ -1,0 +1,6 @@
+Collecting wrapt
+  Downloading wrapt-2.1.1-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (7.4 kB)
+Downloading wrapt-2.1.1-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (121 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 121.3/121.3 kB 17.9 kB/s eta 0:00:00
+Installing collected packages: wrapt
+Successfully installed wrapt-2.1.1
