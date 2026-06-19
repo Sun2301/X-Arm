@@ -8,6 +8,8 @@ Détecte un cube coloré par segmentation HSV, calcule sa position 3D, et comman
 ## Pipeline
 
 ```
+Position de capture (angles fixes)
+     ↓
 pixel (u, v)
      ↓  K + Z_CAM
 Point 3D repère caméra (Xc, Yc, Zc)
@@ -17,7 +19,13 @@ Point 3D repère base (Xb, Yb, Zb)
 Angles servos
      ↓
 Pick and place
+     ↓
+Retour position de capture (avant la prochaine détection)
 ```
+
+**Important :** `R_cb` et `T_cb` ne sont valables que depuis une position précise du
+bras (la position de capture). Le bras doit impérativement y revenir avant chaque
+détection - sinon la transformation caméra→base est fausse.
 
 ---
 
@@ -36,6 +44,10 @@ Pick and place
 
 K est la matrice intrinsèque de la caméra. Elle est nécessaire pour convertir
 un pixel en point 3D dans le repère caméra.
+
+**Important :** faire cette calibration avec le bras en position de capture
+(`CAPTURE_JOINTS`), puisque c'est depuis cette position que le système fonctionnera
+en réalité.
 
 ### 1.1 Préparer le damier
 - Imprimer le damier OpenCV : https://docs.opencv.org/4.x/pattern.png
@@ -101,7 +113,9 @@ K = np.array([[847.3241,       0, 318.4412],
 ## Étape 2 — Mesurer Z_CAM
 
 Z_CAM est la distance entre la caméra et la surface de la table,
-mesurée le long de l'axe optique de la caméra.
+mesurée le long de l'axe optique de la caméra, **avec le bras en position de capture**
+(`CAPTURE_JOINTS`). C'est uniquement depuis cette position que Z_CAM, K, R_cb et T_cb
+sont cohérents entre eux.
 
 - Si la caméra est **parfaitement verticale** : Z_CAM = distance caméra-table à la règle
 - Si la caméra est **inclinée** : Z_CAM = distance le long de l'axe de la caméra (un peu plus grande)
@@ -198,6 +212,11 @@ Dans `pick_and_place.py` :
 CAMERA_INDEX = 1       # index de ta caméra (0 = webcam interne, 1 = externe)
 Z_CAM = 0.40           # distance caméra-table en mètres (à mesurer)
 
+# Position de capture - angles fixes depuis lesquels R_cb/T_cb sont valables
+# Le bras y retourne avant chaque detection
+CAPTURE_JOINTS = [90, 99.3, 9, 91, 174]
+CAPTURE_TIME   = 1000   # ms
+
 # Cube
 Z_PICK = 0.02          # moitié de la hauteur du cube (cube 4cm => 0.02m)
 
@@ -236,7 +255,14 @@ Recapturer les images : meilleur éclairage, damier bien à plat, plus d'angles 
 ### Le bras va au mauvais endroit
 1. Vérifier que K est correct (erreur reprojection < 1.0 px)
 2. Vérifier Z_CAM (mesurer à la règle)
-3. Tester en mode `--test --image` et comparer Xb/Yb avec la position réelle du cube
+3. Vérifier que le bras était bien en position de capture (`CAPTURE_JOINTS`) lors
+   de la calibration K et lors de la mesure de Z_CAM
+4. Tester en mode `--test --image` et comparer Xb/Yb avec la position réelle du cube
+
+### Le bras ne revient pas à la bonne position avant de capturer
+Vérifier `CAPTURE_JOINTS` dans `pick_and_place.py` - ce sont les 5 angles exacts
+(en degrés) depuis lesquels R_cb et T_cb sont valables. Si ces angles sont faux,
+toute la chaîne de conversion devient incohérente même si K et Z_CAM sont corrects.
 
 ---
 

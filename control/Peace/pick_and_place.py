@@ -299,6 +299,11 @@ HOME_TIME      = 2000
 PLACE_TIME     = 1500
 HOME_JOINTS    = [90, 90, 90, 90, 90]
 
+# Position de capture - le bras revient ici avant chaque detection.
+# C'est depuis cette position que R_cb/T_cb sont valables (calibration faite ici).
+CAPTURE_JOINTS = [90, 99.3, 9, 91, 174]
+CAPTURE_TIME   = 1000   # ms
+
 # Position de depot
 PLACE_X      =  0.00
 PLACE_Y      =  0.12
@@ -314,6 +319,18 @@ def go_home(arm):
     j1, j2, j3, j4, j5 = HOME_JOINTS
     arm.Arm_serial_servo_write6(j1, j2, j3, j4, j5, GRIPPER_OPEN, HOME_TIME)
     time.sleep(HOME_TIME / 1000.0 + 0.5)
+
+
+def go_to_capture_position(arm):
+    """
+    Ramene le bras a la position fixe de capture.
+    R_cb et T_cb ne sont valables QUE depuis cette position exacte -
+    le bras doit y revenir avant chaque detection de cube.
+    """
+    print("[ARM] Retour position de capture...")
+    j1, j2, j3, j4, j5 = CAPTURE_JOINTS
+    arm.Arm_serial_servo_write6(j1, j2, j3, j4, j5, GRIPPER_OPEN, CAPTURE_TIME)
+    time.sleep(CAPTURE_TIME / 1000.0 + 0.5)
 
 
 def move_to(arm, joints_deg, gripper=GRIPPER_OPEN, duration=MOVE_TIME):
@@ -595,6 +612,7 @@ def run(camera_index=CAMERA_INDEX):
         return
 
     go_home(arm)
+    go_to_capture_position(arm)
     print("\n[RUN] Systeme actif - Q pour quitter\n")
 
     try:
@@ -623,6 +641,11 @@ def run(camera_index=CAMERA_INDEX):
                 cv2.destroyAllWindows()
 
                 success = pick_and_place(arm, chain, x_obj, y_obj)
+
+                # Retour obligatoire a la position de capture avant la
+                # prochaine detection - R_cb/T_cb ne sont valables que depuis
+                # cette position precise.
+                go_to_capture_position(arm)
 
                 cap = cv2.VideoCapture(camera_index)
                 if not success:
